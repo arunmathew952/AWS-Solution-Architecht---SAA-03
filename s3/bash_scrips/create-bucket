@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+# Stop on command errors, missing variables, or failed commands in a pipeline.
+set -euo pipefail
+
+# A bucket name must be globally unique across AWS. Choose the AWS region too.
+# Example: ./create-bucket my-unique-bucket-123 us-west-2
+usage() {
+	echo "Usage: $0 <bucket-name> <region>" >&2
+}
+
+# Require both inputs before making an AWS API request.
+if [[ $# -ne 2 ]]; then
+	usage
+	exit 2
+fi
+
+bucket_name=$1
+region=$2
+
+# The AWS CLI must be installed, and AWS credentials must be configured.
+# The credentials also need permission to create S3 buckets (s3:CreateBucket).
+if ! command -v aws >/dev/null 2>&1; then
+	echo "Error: AWS CLI is not installed or not on PATH." >&2
+	exit 1
+fi
+
+# Call the S3 CreateBucket API through `aws s3api`.
+# The us-east-1 API request must omit LocationConstraint; other regions require it.
+if [[ "$region" == "us-east-1" ]]; then
+	aws s3api create-bucket \
+		--bucket "$bucket_name" \
+		--region "$region"
+else
+	aws s3api create-bucket \
+		--bucket "$bucket_name" \
+		--region "$region" \
+		--create-bucket-configuration "LocationConstraint=$region"
+fi

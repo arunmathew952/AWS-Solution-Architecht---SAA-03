@@ -1,0 +1,18 @@
+#!/bin/bash
+echo "delete-objects.sh: This script deletes all objects in a specified S3 bucket."
+# Stop if a command fails or if the script uses an unset variable. 
+set -euo pipefail
+
+if ! command -v aws >/dev/null 2>&1; then
+    echo "Error: AWS CLI is not installed or not on PATH." >&2
+    exit 1
+fi
+
+if [-z "$1" ]; then
+    echo "Usage: $0 <bucket-name>"
+    exit 1
+fi
+
+BUCKET_NAME="$1"
+
+aws s3api delete-bucket --bucket "$BUCKET_NAME" --force 

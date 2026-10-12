@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# Stop if a command fails or if the script uses an unset variable.
+set -euo pipefail
+
+# AWS CLI must be installed, and AWS credentials must be configured.
+if ! command -v aws >/dev/null 2>&1; then
+	echo "Error: AWS CLI is not installed or not on PATH." >&2
+	exit 1
+fi
+
+aws s3api list-buckets | jq -r '.Buckets | sort_by(.CreationDate) | .[] | .Name'
